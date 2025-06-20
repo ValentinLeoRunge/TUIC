@@ -55,3 +55,33 @@ def calculate_additional_metrics(df, shares_owned):
     df['cumulative_return'] = (1 + df['daily_return']).cumprod() - 1
     df['MSMIF_position'] = (shares_owned * df['close']).round(2)
     return df
+
+def load_benchmarks(absolute_path, benchmarks_ticker):
+    today = pd.Timestamp.today().normalize()
+    benchmarks = {}
+
+    for ticker in benchmarks_ticker:
+        df = yf.download(ticker, start=start_date, end=today, interval='1d')
+        if df.empty:
+            print(f"No data found for benchmark {ticker}. Please check the ticker symbol or the date range.")
+            continue
+
+        # clean up the DataFrame
+        df.reset_index(inplace=True)
+        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d', errors='coerce')
+        df.columns = df.columns.droplevel('Ticker')
+        df.rename(columns={'Date': 'date', 'Price': 'price', 'Close': 'close', 'High': 'high', 'Low': 'low', 'Open': 'open', 'Volume': 'volume'}, inplace=True)
+
+        # calculate additional metrics
+        df['daily_return'] = df['close'].pct_change()
+        df['cumulative_return'] = (1 + df['daily_return']).cumprod() - 1
+
+        # Safe to CSV file
+        relative_path = f"/data/benchmarks/"
+        file_path = os.path.join(absolute_path + relative_path)
+        os.makedirs(file_path, exist_ok=True)
+        df.to_csv(file_path + f"{ticker}.csv", index=False)
+
+        benchmarks[ticker] = df
+    
+    return benchmarks
