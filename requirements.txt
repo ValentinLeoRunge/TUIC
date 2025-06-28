@@ -1,5 +1,7 @@
-os
 pandas
 numpy
 yfinance
 datetime
+statsmodels
+matplotlib
+openpyxl

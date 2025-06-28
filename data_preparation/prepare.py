@@ -16,7 +16,7 @@ def load_portfolio_investments(absolute_path, input_file):
     input_file['buy_in_date'] = input_file['buy_in_date'].dt.strftime('%Y-%m-%d')
 
     # Extrakt stock data from yfinance
-    today = pd.Timestamp.today().normalize()
+    yesterday = (pd.Timestamp.today() - pd.Timedelta(days=1)).normalize()
     portfolio_stocks = {}
 
     for index, row in input_file.iterrows():
@@ -24,7 +24,7 @@ def load_portfolio_investments(absolute_path, input_file):
         start = row['buy_in_date']
         shares_owned = row['shares']
 
-        df = yf.download(ticker, start = start, end = today, interval ='1d')
+        df = yf.download(ticker, start = start, end = yesterday, interval ='1d', auto_adjust=True)
         if df.empty:
             print(f"No data found for {ticker}. Please check the ticker symbol or the date range.")
             continue
@@ -32,13 +32,13 @@ def load_portfolio_investments(absolute_path, input_file):
         # clean up the DataFrame
         df.reset_index(inplace=True)
         df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d', errors='coerce')
-        df.columns = df.columns.droplevel('Ticker')
+        # df.columns = df.columns.droplevel('Ticker')
         df.rename(columns={'Date': 'date', 'Price': 'price', 'Close': 'close', 'High': 'high', 'Low': 'low', 'Open': 'open', 'Volume': 'volume'}, inplace=True)
 
         df = calculate_additional_metrics(df, shares_owned)
 
-        # df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d', errors='coerce')
-        
+        df.columns = df.columns.droplevel('Ticker')
+
         # Safe portfolio stock data to portfolio_investments folder
         relative_path = f"/data/portfolio_investments/"
         file_path = os.path.join(absolute_path + relative_path)
@@ -51,17 +51,24 @@ def load_portfolio_investments(absolute_path, input_file):
 
 def calculate_additional_metrics(df, shares_owned):
     df['shares_owned'] = shares_owned
-    df['daily_return'] = df['close'].pct_change()
-    df['cumulative_return'] = (1 + df['daily_return']).cumprod() - 1
-    df['MSMIF_position'] = (shares_owned * df['close']).round(2)
+    df['relative_daily_return'] = df['close'].pct_change()
+    df['relative_cumulative_return'] = (1 + df['relative_daily_return']).cumprod() - 1
+    df['asset_value_EoP'] = (shares_owned * df['close']).round(2)
+    df['absolute_daily_return'] = df['asset_value_EoP'].diff()
+    df['asset_value_BoP'] = df['asset_value_EoP'].shift(1).fillna(0)
+    
+
+    # Reorder columns
+    df = df[['date', 'open', 'high', 'low', 'close', 'volume', 'shares_owned', 'relative_daily_return', 'relative_cumulative_return', 'absolute_daily_return', 'asset_value_BoP', 'asset_value_EoP']]
     return df
 
-def load_benchmarks(absolute_path, benchmarks_ticker):
-    today = pd.Timestamp.today().normalize()
+def load_benchmarks(absolute_path, benchmarks_ticker, model_start_date):
+    yesterday = (pd.Timestamp.today() - pd.Timedelta(days=1)).normalize()
     benchmarks = {}
+    start_date_str = model_start_date.strftime('%Y-%m-%d')
 
     for ticker in benchmarks_ticker:
-        df = yf.download(ticker, start=start_date, end=today, interval='1d')
+        df = yf.download(ticker, start=start_date_str, end=yesterday, interval='1d', auto_adjust=True)
         if df.empty:
             print(f"No data found for benchmark {ticker}. Please check the ticker symbol or the date range.")
             continue
@@ -69,18 +76,20 @@ def load_benchmarks(absolute_path, benchmarks_ticker):
         # clean up the DataFrame
         df.reset_index(inplace=True)
         df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d', errors='coerce')
-        df.columns = df.columns.droplevel('Ticker')
+        # df.columns = df.columns.droplevel('Ticker')
         df.rename(columns={'Date': 'date', 'Price': 'price', 'Close': 'close', 'High': 'high', 'Low': 'low', 'Open': 'open', 'Volume': 'volume'}, inplace=True)
 
         # calculate additional metrics
-        df['daily_return'] = df['close'].pct_change()
-        df['cumulative_return'] = (1 + df['daily_return']).cumprod() - 1
+        df['relative_daily_return'] = df['close'].pct_change()
+        df['relative_cumulative_return'] = (1 + df['relative_daily_return']).cumprod() - 1
+
+        df.columns = df.columns.droplevel('Ticker')
 
         # Safe to CSV file
         relative_path = f"/data/benchmarks/"
         file_path = os.path.join(absolute_path + relative_path)
         os.makedirs(file_path, exist_ok=True)
-        df.to_csv(file_path + f"{ticker}.csv", index=False)
+        df.to_csv(file_path + f"{benchmarks_ticker.get(ticker)}({ticker}).csv", index=False)
 
         benchmarks[ticker] = df
     
