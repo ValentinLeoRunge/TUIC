@@ -1,2 +1,17 @@
 1. Build template Interface
 2. Implement functionality
+
+How to start streamlit:
+
+streamlit run file_path in the terminal
+
+Next Steps:
+
+Yunqing:
+- understand the code logic
+- clarify how to use the data preparing method and create a dataframe from the existing stocks to aggregate the data --> meeting with Valentin 
+
+Valentin:
+- understand the code logic
+- clean the portfolio_model folder
+- have a look into streamlit
