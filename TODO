@@ -1,3 +1,23 @@
+Hohe Prio:
+1. Monthly Returns implementieren
+2. Risk Metrics (Sharpe, Sortino, Max DD, VaR, CVar)
+3. Reworking Alpha/ Beta (Risk-Free Rate, R^2)
+4. Basic Streamlit Dashboard
+
+5. Sector/ Geography Exposure
+6. Stress Testing (2008, COVID scenarios)
+7. Correlation Analysis
+8. Rolling Metrics (Rolling Sharpe, Beta over time)
+
+9.Portfolio Simulation Module
+10. "Add Equity" Feature in Streamlit
+11. Impact Analysis (Before/ After comparison)
+
+12. Monte Carlo Simulation
+13. Historical Simulation (Bootstrap)
+14. Scenario Analysis
+
+_________________________________________________________________________________________________________________________________________________________
 1. Build template Interface
 2. Implement functionality
 

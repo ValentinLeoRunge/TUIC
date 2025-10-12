@@ -15,6 +15,7 @@ def aggregate_portfolio_investments(portfolio_investments, absolute_path):
         absolute_daily_return = ('absolute_daily_return', 'sum')
     ).reset_index()
 
+    # Calculate returns (what happens when beginning of balance is zero?)
     portfolio_df['relative_daily_return'] = portfolio_df['absolute_daily_return'] / portfolio_df['portfolio_value_BoP']
     portfolio_df['relative_cumulative_return'] = (1 + portfolio_df['relative_daily_return']).cumprod() - 1
 
