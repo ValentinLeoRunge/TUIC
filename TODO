@@ -1,4 +1,3 @@
-Hohe Prio:
 1. Monthly Returns implementieren
 2. Risk Metrics (Sharpe, Sortino, Max DD, VaR, CVar)
 3. Reworking Alpha/ Beta (Risk-Free Rate, R^2)
