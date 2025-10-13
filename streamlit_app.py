@@ -1,6 +1,7 @@
 # streamlit_app.py
 # TUIC Portfolio Model - Structure Skeleton (placeholders only)
 # Run with: streamlit run streamlit_app.py
+from os import write
 
 import streamlit as st
 import pandas as pd
@@ -9,8 +10,12 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
 class TUICPortfolioApp:
-    def __init__(self):
-        self.title = "Title TUIC ..."
+    def __init__(self, portfolio_df=None, sharpe_ratio=None, max_dd_info=None, alpha_beta_table=None):
+        self.title = "TUIC Portfolio Model"
+        self.portfolio_df = portfolio_df
+        self.sharpe_ratio = sharpe_ratio
+        self.max_dd_info = max_dd_info
+        self.alpha_beta_table = alpha_beta_table
         self.placeholder_table = pd.DataFrame({
             "Ticker": ["AAA", "BBB", "CCC"],
             "Shares": [10, 20, 30],
@@ -53,6 +58,14 @@ class TUICPortfolioApp:
                 st.dataframe(self.placeholder_table, use_container_width=True)
 
     def risk_factors(self):
+        st.markdown("### Risk Factors")
+        if self.sharpe_ratio:
+            st.metric("Sharpe Ratio (ann.)", f"{self.sharpe_ratio:.2f}")
+        if self.alpha_beta_table:
+            df = pd.DataFrame(self.alpha_beta_table)
+            st.dataframe(df, use_container_width=True)
+
+    def risk_factors2(self):
         st.markdown("**Risk factors: sharpe ratios, information ratios, volatilities ...**")
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -111,5 +124,57 @@ class TUICPortfolioApp:
 
 
 if __name__ == "__main__":
-    app = TUICPortfolioApp()
+    import os
+    import pandas as pd
+    import numpy as np
+    import yfinance as yf
+    from datetime import datetime, timedelta
+
+    from data_preparation import prepare
+    from portfolio_model import generate_portfolio
+    from portfolio_model.analytics import alpha_beta
+    from scipy.stats import linregress
+
+    from portfolio_model.analytics import risk_analysis
+    from streamlit_app import TUICPortfolioApp
+
+    absolute_path = os.getcwd()
+
+    # --- Load & process data ---
+    input_file = prepare.load_inputs(absolute_path)
+    portfolio_investments_dict = prepare.load_portfolio_investments(absolute_path, input_file)
+
+    model_start_date = datetime(1990, 1, 1)
+    benchmarks_ticker = {
+        'IEUS': 'MSCI_Europe_Small_Cap',
+        'EUMD.L': 'MSCI_Europe_Mid_Cap',
+        'IWVL.L': 'MSCI_World_Value_Factor',
+        'EXW1.DE': 'Eurostoxx_50',
+        'EXSA.DE': 'Eurostoxx_600',
+        'SWDA.L': 'MSCI_World',
+        'FEZ': 'Eurostoxx_50',
+        'IEUR': 'Eurostoxx_600',
+        'URTH': 'MSCI_World'
+    }
+
+    benchmarks_dict = prepare.load_benchmarks(absolute_path, benchmarks_ticker, model_start_date)
+    portfolio_df = generate_portfolio.aggregate_portfolio_investments(portfolio_investments_dict, absolute_path)
+
+    # --- Calculate metrics ---
+    results = []
+    for ticker, benchmark_name in benchmarks_ticker.items():
+        alpha, beta = alpha_beta.calculate_portfolio_alpha_beta(portfolio_df, benchmarks_dict, ticker)
+        annualized_alpha = (1 + alpha) ** 252 - 1
+        results.append({"Benchmark": benchmark_name, "Alpha (ann.)": annualized_alpha, "Beta": beta})
+
+    sharpe_ratio = risk_analysis.calculate_sharpe_ratio(portfolio_df, 0.02, 252)
+    max_dd_info = risk_analysis.calculate_max_drawdown(portfolio_df)
+
+    # --- Launch the Streamlit app ---
+    app = TUICPortfolioApp(
+        portfolio_df=portfolio_df,
+        sharpe_ratio=sharpe_ratio,
+        max_dd_info=max_dd_info,
+        alpha_beta_table=results
+    )
     app.run()
