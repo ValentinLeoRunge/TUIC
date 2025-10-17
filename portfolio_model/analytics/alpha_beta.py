@@ -29,5 +29,6 @@ def calculate_portfolio_alpha_beta(portfolio_df, benchmark_dict, benchmark):
     model = sm.OLS(y, X).fit()
     alpha = model.params['const']
     beta = model.params['relative_daily_return_benchmark']
+    r_squared = model.rsquared
 
-    return alpha, beta
+    return alpha, beta, r_squared

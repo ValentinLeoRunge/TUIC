@@ -1,7 +1,10 @@
-1. Monthly Returns implementieren
-2. Risk Metrics (Sharpe, Sortino, Max DD, VaR, CVar)
-3. Reworking Alpha/ Beta (Risk-Free Rate, R^2)
-4. Basic Streamlit Dashboard
+Finished
+1. Risk Metrics (Sharpe, Sortino, Max DD, VaR, CVar)
+2. Reworking Alpha/ Beta (Risk-Free Rate, R^2)
+
+TODO
+3. Basic Streamlit Dashboard
+4. Monthly Returns implementieren
 
 !Testing Edge Cases
 
@@ -19,14 +22,9 @@
 14. Scenario Analysis
 
 _________________________________________________________________________________________________________________________________________________________
-1. Build template Interface
-2. Implement functionality
-
 How to start streamlit:
 
 streamlit run file_path in the terminal
-
-Next Steps:
 
 Yunqing:
 - understand the code logic
