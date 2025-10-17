@@ -7,7 +7,6 @@ import statsmodels.api as sm
 import matplotlib.pyplot as plt
 
 def calculate_sharpe_ratio(portfolio_df, risk_free_rate=0.02, periods_per_year=252):
-
     start_date = portfolio_df['date'].min() + dt.timedelta(days=1)
     end_date = portfolio_df['date'].max()
 

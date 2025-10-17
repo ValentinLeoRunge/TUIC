@@ -3,6 +3,8 @@
 3. Reworking Alpha/ Beta (Risk-Free Rate, R^2)
 4. Basic Streamlit Dashboard
 
+!Testing Edge Cases
+
 5. Sector/ Geography Exposure
 6. Stress Testing (2008, COVID scenarios)
 7. Correlation Analysis
