@@ -5,6 +5,8 @@ import pandas as pd
 import datetime as dt
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+from Scripts.pywin32_testall import failures
+
 
 def calculate_sharpe_ratio(portfolio_df, risk_free_rate=0.02, periods_per_year=252):
     start_date = portfolio_df['date'].min() + dt.timedelta(days=1)
@@ -77,8 +79,14 @@ def calculate_max_drawdown(portfolio_df):
         'trough_date': portfolio_df.loc[max_dd_date, 'date'] if max_dd_date in portfolio_df.index else None
     }
 
-def calculate_value_at_risk(portfolio_df, risk_free_rate=0.02, periods_per_year=252):
-    return 0
+def calculate_value_at_risk(portfolio_df, confidence=0.95):
+    # TODO: Optionally implement Parametric and Cornish Fisher Method
+    returns = portfolio_df['relative_daily_return'].dropna()
+
+    # historical VaR
+    var = -np.percentile(returns, (1 - confidence) *100)
+
+    return var
 
 def calculate_conditional_value_at_risk(portfolio_df, risk_free_rate=0.02, periods_per_year=252):
     return 0
