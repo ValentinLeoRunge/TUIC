@@ -88,5 +88,13 @@ def calculate_value_at_risk(portfolio_df, confidence=0.95):
 
     return var
 
-def calculate_conditional_value_at_risk(portfolio_df, risk_free_rate=0.02, periods_per_year=252):
-    return 0
+def calculate_conditional_value_at_risk(portfolio_df, confidence=0.95):
+    returns = portfolio_df['relative_daily_return'].dropna()
+
+    # historical VaR
+    var = np.percentile(returns, (1 - confidence) * 100)
+
+    tail_losses = returns[returns <= var]
+    cvar = -tail_losses.mean()
+
+    return cvar
